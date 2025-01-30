@@ -1,5 +1,9 @@
 ## Ultimate Lombok related Knowledge
 
+### Lombok
+- version: 1.18.36
+- https://projectlombok.org/features/
+
 #### Usage
 `make cb` -> build dir -> go through vanilla classes and compare it with lombok ones
 
