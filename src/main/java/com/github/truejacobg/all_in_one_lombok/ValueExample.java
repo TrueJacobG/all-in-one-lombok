@@ -14,5 +14,6 @@ public class ValueExample {
     int age;
 
     double score;
+
     protected String[] tags;
 }

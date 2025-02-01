@@ -497,6 +497,7 @@ All of these annotations can be also used on enums. All constructors will be pri
 public class ConstructorExample<T> {
   private int x, y;
   @NonNull private T description;
+  private final String finalNote;
 }
 
 # vanilla java
@@ -504,6 +505,7 @@ public class ConstructorExample<T> {
     private int x;
     private int y;
     private @NonNull T description;
+    private final String finalNote;
 
     @Generated
     public ConstructorExample(@NonNull T description) {
@@ -511,6 +513,7 @@ public class ConstructorExample<T> {
             throw new NullPointerException("description is marked non-null but is null");
         } else {
             this.description = description;
+            this.finalNote = finalNote;
         }
     }
 
@@ -522,6 +525,7 @@ public class ConstructorExample<T> {
             this.x = x;
             this.y = y;
             this.description = description;
+            this.finalNote = finalNote;
         }
     }
 }
@@ -545,3 +549,686 @@ lombok.noArgsConstructor.extraPrivate=[true,false]
 # if true, than lombok will generate private no-args constructor for all @Value or @Data class
 ```
 
+`@Data`
+
+A shortcut for `@ToString, @EqualsAndHashCode, @Getter on all fields, @Setter on all non-final fields, and @RequiredArgsConstructor`.
+
+Used to create [[POJO]]s from classes
+
+Can be combined with `@ToString` etc if you want to set some specific configuration for specific annotation.
+
+Things like `AccessLevel.NONE` ofc works even if you are using `@Data`.
+
+`@Data(staticConstructor="of")` - will generate new static constructor so you will be able to create object like `Foo.of(1)`.
+
+```java
+# with lombok
+@Data 
+public class DataExample {
+  private final String name;
+  @Setter(AccessLevel.PACKAGE) private int age;
+  private double score;
+  private String[] tags;
+}
+
+# vanilla java
+public class DataExample {
+  private final String name;
+  private int age;
+  private double score;
+  private String[] tags;
+  
+  public DataExample(String name) {
+    this.name = name;
+  }
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  void setAge(int age) {
+    this.age = age;
+  }
+  
+  public int getAge() {
+    return this.age;
+  }
+  
+  public void setScore(double score) {
+    this.score = score;
+  }
+  
+  public double getScore() {
+    return this.score;
+  }
+  
+  public String[] getTags() {
+    return this.tags;
+  }
+  
+  public void setTags(String[] tags) {
+    this.tags = tags;
+  }
+  
+  @Override public String toString() {
+    return "DataExample(" + this.getName() + ", " + this.getAge() + ", " + this.getScore() + ", " + Arrays.deepToString(this.getTags()) + ")";
+  }
+  
+  protected boolean canEqual(Object other) {
+    return other instanceof DataExample;
+  }
+  
+  @Override public boolean equals(Object o) {
+    if (o == this) return true;
+    if (!(o instanceof DataExample)) return false;
+    DataExample other = (DataExample) o;
+    if (!other.canEqual((Object)this)) return false;
+    if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+    if (this.getAge() != other.getAge()) return false;
+    if (Double.compare(this.getScore(), other.getScore()) != 0) return false;
+    if (!Arrays.deepEquals(this.getTags(), other.getTags())) return false;
+    return true;
+  }
+  
+  @Override 
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final long temp1 = Double.doubleToLongBits(this.getScore());
+    result = (result*PRIME) + (this.getName() == null ? 43 : this.getName().hashCode());
+    result = (result*PRIME) + this.getAge();
+    result = (result*PRIME) + (int)(temp1 ^ (temp1 >>> 32));
+    result = (result*PRIME) + Arrays.deepHashCode(this.getTags());
+    return result;
+  }
+}
+
+# config
+lombok.data.flagUsage=[warning,error]
+# default - not set
+# will throw if set
+
+lombok.noArgsConstructor.extraPrivate=[true,false]
+# default - false
+# if true, than will create additional noArgsConstructor that will set all fields to default values
+```
+
+
+`@Value`
+
+Don't get confused with [[@Value in Spring]].
+
+Works like `@Data` but everything is `final` and there are no setters.
+So:
+- class is final
+- `@ToString @EqualsAndHashCode @AllArgsConstructor @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE) @Getter`
+- if you will any additional annotation like `@Builder` (which forces as to have @AllArgsConstructor without final fields), that other annotation is always stronger so in that case constructor will be generated BUT you cannot override behavior of `@FieldDefaults` by putting another `@FieldDefaults`. You can use `@NonFinal or @PackagePrivate` on class or field to change `@Value` behavior for that.
+
+Make a notice that `@NonFinal` is experimental. Will make a field non-final.
+
+```java
+# with lombok
+@Value
+public class ValueExample {
+  String name;
+  
+  @With(AccessLevel.PACKAGE)
+  @NonFinal int age;
+  
+  double score;
+  
+  protected String[] tags;
+}
+
+# vanilla java
+public final class ValueExample {
+  private final String name;
+  private int age;
+  private final double score;
+  protected final String[] tags;
+  
+  @java.beans.ConstructorProperties({"name", "age", "score", "tags"})
+  public ValueExample(String name, int age, double score, String[] tags) {
+    this.name = name;
+    this.age = age;
+    this.score = score;
+    this.tags = tags;
+  }
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  public int getAge() {
+    return this.age;
+  }
+  
+  public double getScore() {
+    return this.score;
+  }
+  
+  public String[] getTags() {
+    return this.tags;
+  }
+  
+  @java.lang.Override
+  public boolean equals(Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ValueExample)) return false;
+    final ValueExample other = (ValueExample)o;
+    final Object this$name = this.getName();
+    final Object other$name = other.getName();
+    if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
+    if (this.getAge() != other.getAge()) return false;
+    if (Double.compare(this.getScore(), other.getScore()) != 0) return false;
+    if (!Arrays.deepEquals(this.getTags(), other.getTags())) return false;
+    return true;
+  }
+  
+  @java.lang.Override
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final Object $name = this.getName();
+    result = result * PRIME + ($name == null ? 43 : $name.hashCode());
+    result = result * PRIME + this.getAge();
+    final long $score = Double.doubleToLongBits(this.getScore());
+    result = result * PRIME + (int)($score >>> 32 ^ $score);
+    result = result * PRIME + Arrays.deepHashCode(this.getTags());
+    return result;
+  }
+  
+  @java.lang.Override
+  public String toString() {
+    return "ValueExample(name=" + getName() + ", age=" + getAge() + ", score=" + getScore() + ", tags=" + Arrays.deepToString(getTags()) + ")";
+  }
+  
+  ValueExample withAge(int age) {
+    return this.age == age ? this : new ValueExample(name, age, score, tags);
+  }
+}
+
+# config
+lombok.value.flagUsage=[warning,error]
+# default - not set
+# if set than will generate error on occurance
+
+lombok.noArgsConstructor.extraPrivate=[true,false]
+# default - false
+# generate extra noArgsConstructor that will set all fields to its default values
+```
+
+
+`@Builder`
+
+API for building objects in more readable way. It will generate method `.builder()` which will return `<ClassName>Builder` and it will be the beginning of the object creation.  It will generate method for each class variable. Methods will be setters for that fields and will have names like class fields. All methods will return `<ClassName>Builder`. To create object you have to use `.build()` at the end.
+
+If method exists it will get skipped, so you can override builder methods.
+
+If you have filed like `List<String> names` you can add annotation `@Singular` on it and create object with it like:
+`Example.builder()
+	.name("123")
+	.name("321")
+	.build();`
+You can specify name of singular thing with `@Singular("WILL_BE_THE_NAME")`. If lombok cannot create the name automatically than it will raise an error.
+@Singular(ignoreNullCollections = true) - will make lombok do not throw exceptions on passing null as collections. Code snippet: [for @Singular]([https://projectlombok.org/features/BuilderSingular](for @Singular)).
+
+You can build that object one by one.
+
+You can put builder annotation on class, constructor or method (but the last one has different behavior).
+
+`@Builder`needs `@AllArgsConstructor`. If annotation / constructor is not provided than `@Builder` will generate it by itself.
+
+`@Builder.ObtainVia(method = "calculateFoo")` - you can put that on field and than builder will use that method to obtain value (that method can take argument that you will pass during object creation).
+
+`@Builder.Default` - if you don't specify field value during object creation it will get default value. But if you add this annotation than you can specify value for that field.
+
+Config:
+`@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true, access = AccessLevel.PRIVATE, setterPrefix = "set")`
+- The _builder's class name_ (default: return type + 'Builder')
+- The _build()_ method's name (default: `"build"`)
+- The _builder()_ method's name (default: `"builder"`)
+- If you want `toBuilder()` (default: no)
+- The access level of all generated elements (default: `public`).
+- (discouraged) If you want your builder's 'set' methods to have a prefix, i.e. `Person.builder().setName("Jane").build()` instead of `Person.builder().name("Jane").build()` and what it should be.
+
+```java
+# with lombok
+@Builder
+public class BuilderExample {
+  @Builder.Default 
+  private long created = System.currentTimeMillis();
+  
+  private String name;
+  
+  private int age;
+  
+  @Singular
+  private Set<String> occupations;
+}
+
+# vanilla java
+public class BuilderExample {
+  private long created;
+  private String name;
+  private int age;
+  private Set<String> occupations;
+  
+  BuilderExample(String name, int age, Set<String> occupations) {
+    this.name = name;
+    this.age = age;
+    this.occupations = occupations;
+  }
+  
+  private static long $default$created() {
+    return System.currentTimeMillis();
+  }
+  
+  public static BuilderExampleBuilder builder() {
+    return new BuilderExampleBuilder();
+  }
+  
+  public static class BuilderExampleBuilder {
+    private long created;
+    private boolean created$set;
+    private String name;
+    private int age;
+    private java.util.ArrayList<String> occupations;
+    
+    BuilderExampleBuilder() {
+    }
+    
+    public BuilderExampleBuilder created(long created) {
+      this.created = created;
+      this.created$set = true;
+      return this;
+    }
+    
+    public BuilderExampleBuilder name(String name) {
+      this.name = name;
+      return this;
+    }
+    
+    public BuilderExampleBuilder age(int age) {
+      this.age = age;
+      return this;
+    }
+    
+    public BuilderExampleBuilder occupation(String occupation) {
+      if (this.occupations == null) {
+        this.occupations = new java.util.ArrayList<String>();
+      }
+      
+      this.occupations.add(occupation);
+      return this;
+    }
+    
+    public BuilderExampleBuilder occupations(Collection<? extends String> occupations) {
+      if (this.occupations == null) {
+        this.occupations = new java.util.ArrayList<String>();
+      }
+
+      this.occupations.addAll(occupations);
+      return this;
+    }
+    
+    public BuilderExampleBuilder clearOccupations() {
+      if (this.occupations != null) {
+        this.occupations.clear();
+      }
+      
+      return this;
+    }
+
+    public BuilderExample build() {
+      // complicated switch statement to produce a compact properly sized immutable set omitted.
+      Set<String> occupations = ...;
+      return new BuilderExample(created$set ? created : BuilderExample.$default$created(), name, age, occupations);
+    }
+    
+    @java.lang.Override
+    public String toString() {
+      return "BuilderExample.BuilderExampleBuilder(created = " + this.created + ", name = " + this.name + ", age = " + this.age + ", occupations = " + this.occupations + ")";
+    }
+  }
+}
+
+# more of a config
+lombok.builder.className=[name]
+# default - *Builder
+# enables change of a <Classname>Builder
+
+lombok.builder.flagUsage=[warning,error]
+# default - not set
+# if used than error
+
+lombok.singular.useGuava=[true,false]
+# default - false
+# will use builders and immutable collections from guava
+
+lombok.singular.auto=[true,false]
+# default - true
+# if false than you have to always specify name of singular thing when using @Singular
+```
+
+
+`@SneakyThrows`
+
+Lombok will fake out the compiler so you don't have to handle exception that cannot happened. You can pass exceptions to the `@SneakyThrows([here])` so it will only silent those.
+
+It will raise an error if you try to declare a `checked exception` as sneakily thrown when you don't call any methods that throw this `exception`.
+
+You cannot put it on constructor of a class that inherits from other class, because super call has to be the first in this constructor (irrelevant since [[java 23]])
+
+```java
+# with lombok
+public class SneakyThrowsExample implements Runnable {
+  @SneakyThrows(UnsupportedEncodingException.class)
+  public String utf8ToString(byte[] bytes) {
+    return new String(bytes, "UTF-8");
+  }
+  
+  @SneakyThrows
+  public void run() {
+    throw new Throwable();
+  }
+}
+
+# vanilla java
+public class SneakyThrowsExample implements Runnable {
+    public SneakyThrowsExample() {
+    }
+
+    public String utf8ToString(byte[] bytes) {
+        try {
+            return new String(bytes, "UTF-8");
+        } catch (UnsupportedEncodingException $ex) {
+            throw $ex;
+        }
+    }
+
+    public void run() {
+        try {
+            throw new Throwable();
+        } catch (Throwable $ex) {
+            throw $ex;
+        }
+    }
+}
+
+# config
+lombok.sneakyThrows.flagUsage=[warning,error]
+# default - not set
+# flag any usage
+```
+
+
+`@Synchronized`
+
+Safer way to use [[synchronized]].
+Can be used on methods and static methods.
+You can specify field name in `@Synchornized(here)` that lock will be working on.
+
+It's safer than blocking on `this` because something can also lock on the same object in the other part of the program so it could create some side effects.
+
+For using with virtual threads recommended is [[#@Locked]].
+
+Lock is initialized as `Object[]`, because `new Object()` is not serializable, but empty array is.
+
+```java
+# with lombok
+public class SynchronizedExample {
+  private final Object readLock = new Object();
+  
+  @Synchronized
+  public static void hello() {
+    System.out.println("world");
+  }
+  
+  @Synchronized
+  public int answerToLife() {
+    return 42;
+  }
+  
+  @Synchronized("readLock")
+  public void foo() {
+    System.out.println("bar");
+  }
+}
+
+# vanilla java
+public class SynchronizedExample {
+  private static final Object $LOCK = new Object[0];
+  private final Object $lock = new Object[0];
+  private final Object readLock = new Object();
+  
+  public static void hello() {
+    synchronized($LOCK) {
+      System.out.println("world");
+    }
+  }
+  
+  public int answerToLife() {
+    synchronized($lock) {
+      return 42;
+    }
+  }
+  
+  public void foo() {
+    synchronized(readLock) {
+      System.out.println("bar");
+    }
+  }
+}
+
+# config
+lombok.synchronized.flagUsage=[warning,error]
+# default - not set
+# throw if appears
+```
+
+
+## @Locked
+`@Locked`
+
+Similar to `@Synchronized` but uses `ReentrantLock` - used with virtual threads (so java 20+). `@Locked.Read` used when blocking on read operations. `@Locked.Write` used when blocking on write operations. You cannot use `@Locked.Read` and `@Locked.Write` on the same field, because it blocks on different lock.
+
+```java
+# with lombok
+public class LockedExample {
+  private int value = 0;
+  
+  @Locked.Read
+  public int getValue() {
+    return value;
+  }
+  
+  @Locked.Write
+  public void setValue(int newValue) {
+    value = newValue;
+  }
+  
+  @Locked("baseLock")
+  public void foo() {
+    System.out.println("bar");
+  }
+}
+
+# vanilla java
+public class LockedExample {
+  private final ReadWriteLock lock = new ReentrantReadWriteLock();
+  private final Lock baseLock = new ReentrantLock();
+  private int value = 0;
+  
+  public int getValue() {
+    this.lock.readLock().lock();
+    try {
+      return value;
+    } finally {
+      this.lock.readLock().unlock();
+    }
+  }
+  
+  public void setValue(int newValue) {
+    this.lock.writeLock().lock();
+    try {
+      value = newValue;
+    } finally {
+      this.lock.writeLock().unlock();
+    }
+  }
+  
+  public void foo() {
+    this.baseLock.lock();
+    try {
+      System.out.println("bar");
+    } finally {
+      this.baseLock.unlock();
+    }
+  }
+}
+
+# config
+lombok.locked.flagUsage=[warning,error]
+# default - not set
+# flag any usage of annotation
+```
+
+
+`@With`
+
+Create copy of the object with one field changed / get the object if passed value is the same. Requires all args constructor. Cannot be used for static fields.
+
+```java
+# with lombok
+public class WithExample {
+  @With(AccessLevel.PROTECTED) @NonNull private final String name;
+  @With private final int age;
+  
+  public WithExample(@NonNull String name, int age) {
+    this.name = name;
+    this.age = age;
+  }
+}
+
+# vanilla java
+public class WithExample {
+  private @NonNull final String name;
+  private final int age;
+
+  public WithExample(String name, int age) {
+    if (name == null) throw new NullPointerException();
+    this.name = name;
+    this.age = age;
+  }
+
+  protected WithExample withName(@NonNull String name) {
+    if (name == null) throw new java.lang.NullPointerException("name");
+    return this.name == name ? this : new WithExample(name, age);
+  }
+
+  public WithExample withAge(int age) {
+    return this.age == age ? this : new WithExample(name, age);
+  }
+}
+
+# config
+lombok.accessors.prefix+=[fieldPrefix]
+lombok.accessors.prefix-=[fieldPrefix]
+# default - not set
+# define common prefix / delete common prefix
+
+lombok.accessors.capitalization=[basic,beanspec]
+# default - basic
+# field - uShape, basic - withUShape, beanspec - withuSpec
+
+lombok.with.flagUsage=[warning,error]
+# default - not set
+# flag all usages
+```
+
+
+`@Log`
+
+Adds static field `log` that enables you to use logger framework.
+
+`@CommonsLog` org.apache.commons.logging
+`@Flogger` com.google.common.flogger
+`@JBossLog` org.jboss.logging
+`@Log` java.util.logging
+`@Log4j` org.apache.log4j
+`@Log4j2` org.apache.logging.log4j
+`@Slf4j` org.slf4j
+`@XSlf4j` org.slf4j.ext
+`@CustomLog`
+This option _requires_ that you add a configuration to your `lombok.config` file to specify what `@CustomLog` should do.
+
+```java
+# with lombok
+@Log
+public class LogExample {
+  
+  public static void main(String... args) {
+    log.severe("Something's wrong here");
+  }
+}
+
+@Slf4j
+public class LogExampleOther {
+  
+  public static void main(String... args) {
+    log.error("Something else is wrong here");
+  }
+}
+
+@CommonsLog(topic="CounterLog")
+public class LogExampleCategory {
+
+  public static void main(String... args) {
+    log.error("Calling the 'CounterLog' with a message");
+  }
+}
+
+# vanilla java
+public class LogExample {
+  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LogExample.class.getName());
+  
+  public static void main(String... args) {
+    log.severe("Something's wrong here");
+  }
+}
+
+public class LogExampleOther {
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogExampleOther.class);
+  
+  public static void main(String... args) {
+    log.error("Something else is wrong here");
+  }
+}
+
+public class LogExampleCategory {
+  private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog("CounterLog");
+
+  public static void main(String... args) {
+    log.error("Calling the 'CounterLog' with a message");
+  }
+}
+
+# config
+lombok.log.flagUsage=[warning,error]
+lombok.log.[custom, apacheCommons, flogger, jbosslog, javaUtilLogging, log4j, log4j2, slf4j, xslf4j].flagUsage=[warning,error]
+# default - not set
+# flag usage as warning/error
+
+lombok.log.fieldName=[customName]
+# default - log
+# set static field name
+
+lombok.log.fieldIsStatic=[true,false]
+# default - true
+# if false than every log field will be set per instance
+
+lombok.log.custom.declaration=[]
+# default - not set
+# used for custom logger setting
+```

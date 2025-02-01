@@ -11,4 +11,5 @@ public class ConstructorExample<T> {
     private int x, y;
     @NonNull
     private T description;
+    private final String finalNote;
 }
