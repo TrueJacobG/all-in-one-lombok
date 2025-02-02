@@ -48,6 +48,7 @@ lombok.var.flagUsage=[warning,error]
 # default - not set
 ```
 
+---
 
 [@NonNull](https://projectlombok.org/features/NonNull)
 
@@ -89,9 +90,11 @@ lombok.nonNull.flagUsage=[warning,error]
 # default - not set
 ```
 
+---
+
 [@Cleanup](https://projectlombok.org/features/Cleanup)
 
-Will generate `try finally` block and call `.close()` in `finally` block. Also you can specify which method should be called f.e. `@Cleanup("thismethod")`.
+Will generate `try finally` block and call `.close()` in `finally` block. Also, you can specify which method should be called f.e. `@Cleanup("thismethod")`.
 
 ```java
 # with lombok
@@ -137,6 +140,7 @@ lombok.cleanup.flagUsage=[warning,error]
 # default - not set
 ```
 
+---
 
 [@Getter and @Setter](https://projectlombok.org/features/GetterSetter)
 
@@ -175,7 +179,7 @@ public class GetterSetterExample {
         double[] result = new double[1000000];
 
         for(int i = 0; i < result.length; ++i) {
-            result[i] = Math.asin((double)i);
+            result[i] = Math.asin(i);
         }
 
         return result;
@@ -246,17 +250,18 @@ lombok.getter.lazy.flagUsage=[warning,error]
 
 ```
 
+---
 
 [@ToString](https://projectlombok.org/features/ToString)
 
 Will generate `.toString()` method.
 
-By default all non-static methods will be included.
+By default, all non-static methods will be included.
 
 `@ToString.Exlude` to exclude fields
 `@ToString.Include` to include fields
 
-`@ToString(callSuper=true)` and `@ToString(`onlyExplicitlyIncluded=true) just like in `#config` section.
+`@ToString(callSuper=true)` and `@ToString(onlyExplicitlyIncluded=true)` just like in `#config` section.
 
 You can also include non-static methods that takes no arguments. Use `@ToString.Include` to accomplish that.
 
@@ -264,7 +269,7 @@ Change name of field with `@ToString.Include(name="new name")`.
 
 Change the order of fields printed with `@ToString.Include(rank= 1)`. Higher number == printed first.
 
-If we have method that has the same name as field and we will include that field than value of that field will be replaced with method call.
+If we have method that has the same name as field, and we will include that field than value of that field will be replaced with method call.
 
 All fields that name starts with `$` will be by default excluded.
 
@@ -356,8 +361,9 @@ lombok.toString.flagUsage=[warning,error]
 # lombok will flah any usage
 ```
 
+---
 
-`@EqualsAndHashCode`
+[@EqualsAndHashCode](https://projectlombok.org/features/EqualsAndHashCode)
 
 Generates `.equals()` and `.hashcode()`.
 
@@ -473,14 +479,15 @@ lombok.equalsAndHashCode.flagUsage=[warning,error]
 # flag any usage of this annotation
 ```
 
+---
 
-`@NoArgsConstructor, @RequiredArgsConstructor, @AllArgsConstructor`
+[@NoArgsConstructor, @RequiredArgsConstructor, @AllArgsConstructor](https://projectlombok.org/features/constructor)
 
 Will generate constructors.
 
 `@RequiredArgsConstructor` - will generate constructor for all `final` and `@NonNull` fields.
 
-If we will write exactly the same constructor as lombok will generate than error will occur.
+If we write exactly the same constructor as lombok will generate than error will occur.
 
 `@ConstructorProperties` - will be used for constructor with all fields.
 
@@ -533,7 +540,7 @@ public class ConstructorExample<T> {
 # config
 lombok.anyConstructor.addConstructorProperties=[true,false]
 # default - false
-# if set to true tan @ConstructorProperties will be used for all contructors
+# if set to true tan @ConstructorProperties will be used for all constructors
 
 lombok.[allArgsConstructor|requiredArgsConstructor|noArgsConstructor|anyConstructor].flagUsage=[warning,error]
 # default - not set
@@ -549,13 +556,15 @@ lombok.noArgsConstructor.extraPrivate=[true,false]
 # if true, than lombok will generate private no-args constructor for all @Value or @Data class
 ```
 
-`@Data`
+---
+
+[@Data](https://projectlombok.org/features/Data)
 
 A shortcut for `@ToString, @EqualsAndHashCode, @Getter on all fields, @Setter on all non-final fields, and @RequiredArgsConstructor`.
 
 Used to create [[POJO]]s from classes
 
-Can be combined with `@ToString` etc if you want to set some specific configuration for specific annotation.
+Can be combined with `@ToString` etc. if you want to set some specific configuration for specific annotation.
 
 Things like `AccessLevel.NONE` ofc works even if you are using `@Data`.
 
@@ -653,8 +662,9 @@ lombok.noArgsConstructor.extraPrivate=[true,false]
 # if true, than will create additional noArgsConstructor that will set all fields to default values
 ```
 
+---
 
-`@Value`
+[@Value](https://projectlombok.org/features/Value)
 
 Don't get confused with [[@Value in Spring]].
 
@@ -758,8 +768,9 @@ lombok.noArgsConstructor.extraPrivate=[true,false]
 # generate extra noArgsConstructor that will set all fields to its default values
 ```
 
+---
 
-`@Builder`
+[@Builder](https://projectlombok.org/features/Builder)
 
 API for building objects in more readable way. It will generate method `.builder()` which will return `<ClassName>Builder` and it will be the beginning of the object creation.  It will generate method for each class variable. Methods will be setters for that fields and will have names like class fields. All methods will return `<ClassName>Builder`. To create object you have to use `.build()` at the end.
 
@@ -779,7 +790,7 @@ You can put builder annotation on class, constructor or method (but the last one
 
 `@Builder`needs `@AllArgsConstructor`. If annotation / constructor is not provided than `@Builder` will generate it by itself.
 
-`@Builder.ObtainVia(method = "calculateFoo")` - you can put that on field and than builder will use that method to obtain value (that method can take argument that you will pass during object creation).
+`@Builder.ObtainVia(method = "calculateFoo")` - you can put that on field and then builder will use that method to obtain value (that method can take argument that you will pass during object creation).
 
 `@Builder.Default` - if you don't specify field value during object creation it will get default value. But if you add this annotation than you can specify value for that field.
 
@@ -893,7 +904,7 @@ public class BuilderExample {
   }
 }
 
-# more of a config
+# config
 lombok.builder.className=[name]
 # default - *Builder
 # enables change of a <Classname>Builder
@@ -911,10 +922,11 @@ lombok.singular.auto=[true,false]
 # if false than you have to always specify name of singular thing when using @Singular
 ```
 
+---
 
-`@SneakyThrows`
+[@SneakyThrows](https://projectlombok.org/features/SneakyThrows)
 
-Lombok will fake out the compiler so you don't have to handle exception that cannot happened. You can pass exceptions to the `@SneakyThrows([here])` so it will only silent those.
+Lombok will fake out the compiler so you don't have to handle exception that cannot happen. You can pass exceptions to the `@SneakyThrows([here])` so it will only get silent those.
 
 It will raise an error if you try to declare a `checked exception` as sneakily thrown when you don't call any methods that throw this `exception`.
 
@@ -962,8 +974,9 @@ lombok.sneakyThrows.flagUsage=[warning,error]
 # flag any usage
 ```
 
+---
 
-`@Synchronized`
+[@Synchronized](https://projectlombok.org/features/Synchronized)
 
 Safer way to use [[synchronized]].
 Can be used on methods and static methods.
@@ -1027,9 +1040,10 @@ lombok.synchronized.flagUsage=[warning,error]
 # throw if appears
 ```
 
+---
 
 ## @Locked
-`@Locked`
+[@Locked](https://projectlombok.org/features/Locked)
 
 Similar to `@Synchronized` but uses `ReentrantLock` - used with virtual threads (so java 20+). `@Locked.Read` used when blocking on read operations. `@Locked.Write` used when blocking on write operations. You cannot use `@Locked.Read` and `@Locked.Write` on the same field, because it blocks on different lock.
 
@@ -1094,8 +1108,9 @@ lombok.locked.flagUsage=[warning,error]
 # flag any usage of annotation
 ```
 
+---
 
-`@With`
+[@With](https://projectlombok.org/features/With)
 
 Create copy of the object with one field changed / get the object if passed value is the same. Requires all args constructor. Cannot be used for static fields.
 
@@ -1147,8 +1162,9 @@ lombok.with.flagUsage=[warning,error]
 # flag all usages
 ```
 
+---
 
-`@Log`
+[@Log](https://projectlombok.org/features/log)
 
 Adds static field `log` that enables you to use logger framework.
 
@@ -1232,3 +1248,32 @@ lombok.log.custom.declaration=[]
 # default - not set
 # used for custom logger setting
 ```
+
+---
+
+**EXPERIMENTAL**
+
+Worth to mention is that lombok has bunch of experimental features, but:
+- they are not as robust as standard features
+- they are not as well tested
+- may disappear in future releases or may get completely changed
+
+Link: [HERE](https://projectlombok.org/features/experimental/)
+Experimental features:
+- @Accessors
+- @ExtensionMethod
+- @FieldDefaults
+- @Delegate
+- @UtilityClass
+- @Helper
+- @FieldNameConstants
+- @SuperBuilder
+- @Tolerate
+- @Jacksonized
+- @StandardException
+
+Previously experimental, but now they are standard features:
+- @Value
+- @Builder
+- @With (previously named as @Wither)
+- var (since Java 10)

@@ -1,7 +1,7 @@
 package com.github.truejacobg.all_in_one_lombok;
 
-import lombok.Data;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Setter;
 
 @Data
